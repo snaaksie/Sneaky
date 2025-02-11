@@ -35,23 +35,30 @@ def get_random_position(occupied, width=STEP_SIZE, height=STEP_SIZE):
             occupied.append((x, y, x + width, y + height))
             return x, y
 
-occupied_positions = []
+def reset_game():
+    global player, walls, guards, guard_paths, guard_indices, occupied_positions
+    canvas.delete("all")
+    occupied_positions = []
 
-# Player
-px, py = get_random_position(occupied_positions)
-player = canvas.create_rectangle(px, py, px + STEP_SIZE, py + STEP_SIZE, fill='black')
+    # Player
+    px, py = get_random_position(occupied_positions)
+    player = canvas.create_rectangle(px, py, px + STEP_SIZE, py + STEP_SIZE, fill='black')
 
-# Walls
-walls = []
-for _ in range(10):
-    width_modifier = random.randint(3, 10)
-    wx, wy = get_random_position(occupied_positions, width=STEP_SIZE * width_modifier, height=STEP_SIZE)
-    walls.append(canvas.create_rectangle(wx, wy, wx + STEP_SIZE * width_modifier, wy + STEP_SIZE, fill='gray'))
+    # Walls
+    walls = []
+    for _ in range(10):
+        width_modifier = random.randint(3, 10)
+        wx, wy = get_random_position(occupied_positions, width=STEP_SIZE * width_modifier, height=STEP_SIZE)
+        walls.append(canvas.create_rectangle(wx, wy, wx + STEP_SIZE * width_modifier, wy + STEP_SIZE, fill='gray'))
 
-# Guard System
-guards = []
-guard_paths = {}
-guard_indices = {}
+    # Guards
+    guards = []
+    guard_paths = {}
+    guard_indices = {}
+
+    for _ in range(5):
+        create_guard()
+    detect_player()
 
 def create_guard():
     gx, gy = get_random_position(occupied_positions)
@@ -101,15 +108,14 @@ def detect_player():
                 return
     window.after(200, detect_player)
 
-# Create Guards
-for _ in range(5):
-    create_guard()
-detect_player()
-
 # Player movement
 def move_player(event):
-    key_map = {'w': UP, 's': DOWN, 'a': LEFT, 'd': RIGHT}
+    key_map = {'w': UP, 's': DOWN, 'a': LEFT, 'd': RIGHT, 'r': reset_game}
     if event.char not in key_map:
+        return
+    
+    if event.char == 'r':
+        reset_game()
         return
     
     x_move, y_move = key_map[event.char]
@@ -124,4 +130,8 @@ def move_player(event):
 
 # Bind keys
 window.bind("<Key>", move_player)
+
+# Initialize game
+reset_game()
+
 window.mainloop()
